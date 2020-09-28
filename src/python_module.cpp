@@ -74,15 +74,17 @@ namespace pbcvt {
 
 
 #if (PY_VERSION_HEX >= 0x03000000)
-
-    static void *init_ar() {
+    static void *init_ar()
 #else
-        static void init_ar(){
+    static void init_ar()
 #endif
+    {
         Py_Initialize();
 
         import_array();
-        return NUMPY_IMPORT_ARRAY_RETVAL;
+#if PY_VERSION_HEX >= 0x03000000
+        return NULL;
+#endif
     }
 
     BOOST_PYTHON_MODULE (pbcvt) {

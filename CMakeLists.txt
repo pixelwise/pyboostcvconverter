@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.12.1 FATAL_ERROR)
 project("pbcvt")
 
 #----------------------------CMAKE & GLOBAL PROPERTIES-------------------------#
@@ -164,10 +164,9 @@ install(TARGETS ${PROJECT_NAME}
 #---------------------------   TEST PROJECT    -----------------------------------------------------
 # Test Project option
 option(BUILD_TEST_PROJECT ON)
-
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+pbcvt_add_pbcvt_library(static_pbcvt ON)
 
 if (BUILD_TEST_PROJECT)
-    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-    pbcvt_add_pbcvt_library(static_pbcvt ON)
     add_subdirectory(tests)
 endif()
