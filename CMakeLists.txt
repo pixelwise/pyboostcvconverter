@@ -29,62 +29,19 @@ set_property(CACHE PYTHON_DESIRED_VERSION PROPERTY STRINGS ${PYTHON_OPTIONS})
 
 #=============== Find Packages ====================================
 ## OpenCV
+find_package(Boost COMPONENTS ALL REQUIRED)
 find_package(OpenCV COMPONENTS core REQUIRED)
-
-## Python
-include("DetectPython")
-
-## Boost
-if(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
-    # Provisions for typical Boost compiled on Windows
-    # Most commonly, Boost libraries are compiled statically on windows (change as necesssary)
-    set(Boost_USE_STATIC_LIBS TRUE)
-    set(Boost_USE_STATIC_RUNTIME OFF)
-	set(Boost_USE_MULTITHREADED ON)
-	set(Boost_USE_DEBUG_RUNTIME ON)
-	set(Boost_USE_DEBUG_PYTHON OFF)
-endif()
-if (${PYTHON_DESIRED_VERSION} STREQUAL "2.X")
-    set(Python_ADDITIONAL_VERSIONS ${PYTHON2_VERSION_MAJOR}.${PYTHON2_VERSION_MINOR})
-    find_package(Boost COMPONENTS python${PYTHON2_VERSION_MAJOR}${PYTHON2_VERSION_MINOR} QUIET)
-    if(NOT Boost_FOUND)
-       message(STATUS "Trying alternative Boost.Python component name, python-py<version>...")
-	     find_package(Boost COMPONENTS python-py${PYTHON2_VERSION_MAJOR}${PYTHON2_VERSION_MINOR} REQUIRED)
-     endif()
-else ()
-    set(Python_ADDITIONAL_VERSIONS ${PYTHON3_VERSION_MAJOR}.${PYTHON3_VERSION_MINOR})
-    find_package(Boost COMPONENTS python${PYTHON3_VERSION_MAJOR}${PYTHON3_VERSION_MINOR} QUIET)
-    if(NOT Boost_FOUND)
-       message(STATUS "Trying alternative Boost.Python component name, python-py<version>...")
-	     find_package(Boost COMPONENTS python-py${PYTHON3_VERSION_MAJOR}${PYTHON3_VERSION_MINOR} REQUIRED)
-     endif()
-endif ()
-
+find_package(Python 3.5 REQUIRED COMPONENTS Interpreter Development NumPy)
 
 
 #========pick python stuff========================================
 if (${PYTHON_DESIRED_VERSION} STREQUAL "2.X")
-    set(PYTHON_INCLUDE_DIRS ${PYTHON2_INCLUDE_DIR} ${PYTHON2_INCLUDE_DIR2} ${PYTHON2_NUMPY_INCLUDE_DIRS})
-    set(PYTHON_NUMPY_INCLUDE_DIRS ${PYTHON2_NUMPY_INCLUDE_DIRS})
-    set(PYTHON_LIBRARIES ${PYTHON2_LIBRARY})
-    set(PYTHON_EXECUTABLE ${PYTHON2_EXECUTABLE})
-    set(PYTHON_PACKAGES_PATH ${PYTHON2_PACKAGES_PATH})
     set(ARCHIVE_OUTPUT_NAME pbcvt_py2)
     set(ARCHIVE_OUTPUT_SUFFIX _py2)
 else ()
-    set(PYTHON_INCLUDE_DIRS ${PYTHON3_INCLUDE_DIR} ${PYTHON3_INCLUDE_DIR2} ${PYTHON3_NUMPY_INCLUDE_DIRS})
-    set(PYTHON_NUMPY_INCLUDE_DIRS ${PYTHON3_NUMPY_INCLUDE_DIRS})
-    set(PYTHON_LIBRARIES ${PYTHON3_LIBRARY})
-    set(PYTHON_EXECUTABLE ${PYTHON3_EXECUTABLE})
-    set(PYTHON_PACKAGES_PATH ${PYTHON3_PACKAGES_PATH})
     set(ARCHIVE_OUTPUT_NAME pbcvt_py3)
     set(ARCHIVE_OUTPUT_SUFFIX _py3)
 endif ()
-
-find_package_handle_standard_args(Python DEFAULT_MSG PYTHON_INCLUDE_DIRS PYTHON_NUMPY_INCLUDE_DIRS PYTHON_LIBRARIES PYTHON_EXECUTABLE PYTHON_PACKAGES_PATH)
-if(NOT Python_FOUND)
-    message(SEND_ERROR "Not all requred components of Numpy/Python found.")
-endif()
 
 file(GLOB project_sources ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 
@@ -95,18 +52,20 @@ macro(pbcvt_add_pbcvt_library target_name STATIC)
     else()
         add_library(${target_name} SHARED ${project_sources} ${CMAKE_CURRENT_SOURCE_DIR}/include/pyboostcvconverter/pyboostcvconverter.hpp)
     endif()
-    target_include_directories(${target_name}  PUBLIC
-                               "${CMAKE_CURRENT_SOURCE_DIR}/include"
-                               ${Boost_INCLUDE_DIRS}
-                               ${OpenCV_INCLUDE_DIRS}
-                               ${PYTHON_INCLUDE_DIRS}
-                               )
+    target_include_directories(
+        ${target_name} 
+        PUBLIC
+        "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    )
 
-    target_link_libraries(${target_name}
-                          ${Boost_LIBRARIES}
-                          ${OpenCV_LIBRARIES}
-                          ${PYTHON_LIBRARIES}
-                          )
+    target_link_libraries(
+        ${target_name}
+        PUBLIC
+        Python::Python
+        Python::NumPy
+        Boost::boost
+        opencv_core
+    )
 
     if(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
         # Provisions for typical Boost compiled on Windows
