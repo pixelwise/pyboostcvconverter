@@ -66,12 +66,6 @@ macro(pbcvt_add_pbcvt_library target_name STATIC)
         Boost::boost
         opencv_core
     )
-
-    if(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
-        # Provisions for typical Boost compiled on Windows
-        # Unless some extra compile options are used on Windows, the libraries won't have prefixes (change as necesssary)
-        target_compile_definitions(${target_name} PUBLIC -DBOOST_ALL_NO_LIB -DBOOST_SYSTEM_NO_DEPRECATED)
-    endif()
 endmacro()
 
 pbcvt_add_pbcvt_library(${PROJECT_NAME} OFF)
